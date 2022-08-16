@@ -12,25 +12,27 @@ class Controller {
             let allObexTradingPairs = await global.mongoClient.AllObexTradingPairsQuoter()
             let allEvmChainClients = await global.mongoClient.AllChainEvmConfigQuoter()
             for (let source of allSources) {
-                switch (source.type) {
-                    case "chain-evm":
-                        let chainEvm = new chain_evm(source, allTokens, allEvmChainClients)
-                        this.sourceDic[source.name] = chainEvm
-                        break;
-                    case "chain-cosmos":
-                        let chainCosmos = new chain_cosmos(source, allTokens)
-                        this.sourceDic[source.name] = chainCosmos
-                        break;
-                    case "obex-spot":
-                        let obexSpot = new obex_spot(source)
-                        this.sourceDic[source.name] = obexSpot
-                        break;
-                    case "obex-futures":
-                        let obexFutures = new obex_futures(source, allTokens, allObexTradingPairs)
-                        this.sourceDic[source.name] = obexFutures
-                        break;
-                    default:
-                        break;
+                if(source.on) {
+                    switch (source.type) {
+                        case "chain-evm":
+                            let chainEvm = new chain_evm(source, allTokens, allEvmChainClients)
+                            this.sourceDic[source.name] = chainEvm
+                            break;
+                        case "chain-cosmos":
+                            let chainCosmos = new chain_cosmos(source, allTokens)
+                            this.sourceDic[source.name] = chainCosmos
+                            break;
+                        case "obex-spot":
+                            let obexSpot = new obex_spot(source)
+                            this.sourceDic[source.name] = obexSpot
+                            break;
+                        case "obex-futures":
+                            let obexFutures = new obex_futures(source, allTokens, allObexTradingPairs)
+                            this.sourceDic[source.name] = obexFutures
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }, 2 * 1000); // 2 seconds
@@ -63,28 +65,30 @@ class Controller {
         let allObexTradingPairs = await global.mongoClient.AllObexTradingPairsQuoter()
         let allEvmChainClients = await global.mongoClient.AllChainEvmConfigQuoter()
         for (let source of allSources) {
-            if (this.sourceDic[source.name]) {
-                this.sourceDic[source.name].updateAmple(source, allTokens, allObexTradingPairs, allEvmChainClients)
-            } else {
-                switch (source.type) {
-                    case "chain-evm":
-                        let chainEvm = new chain_evm(source, allTokens, allEvmChainClients)
-                        this.sourceDic[source.name] = chainEvm
-                        break;
-                    case "chain-cosmos":
-                        let chainCosmos = new chain_cosmos(source, allTokens)
-                        this.sourceDic[source.name] = chainCosmos
-                        break;
-                    case "obex-spot":
-                        let obexSpot = new obex_spot(source)
-                        this.sourceDic[source.name] = obexSpot
-                        break;
-                    case "obex-futures":
-                        let obexFutures = new obex_futures(source, allTokens, allObexTradingPairs)
-                        this.sourceDic[source.name] = obexFutures
-                        break;
-                    default:
-                        break;
+            if (source.on) {
+                if (this.sourceDic[source.name]) {
+                    this.sourceDic[source.name].updateAmple(source, allTokens, allObexTradingPairs, allEvmChainClients)
+                } else {
+                    switch (source.type) {
+                        case "chain-evm":
+                            let chainEvm = new chain_evm(source, allTokens, allEvmChainClients)
+                            this.sourceDic[source.name] = chainEvm
+                            break;
+                        case "chain-cosmos":
+                            let chainCosmos = new chain_cosmos(source, allTokens)
+                            this.sourceDic[source.name] = chainCosmos
+                            break;
+                        case "obex-spot":
+                            let obexSpot = new obex_spot(source)
+                            this.sourceDic[source.name] = obexSpot
+                            break;
+                        case "obex-futures":
+                            let obexFutures = new obex_futures(source, allTokens, allObexTradingPairs)
+                            this.sourceDic[source.name] = obexFutures
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
