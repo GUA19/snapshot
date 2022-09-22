@@ -76,7 +76,13 @@ class Chain_evm {
         try {
             if (this.on) {
                 let dic = {}
-                let walletTokens = await global.swirlV2GrpcClient.GetWalletStatus(this.name, this.evmChainClient.tradingContractAddress)
+                let contractAddress
+                if (parseInt(this.evmChainClient.tradingContractVersion[0]) < 4) {
+                    contractAddress = this.evmChainClient.tradingContractAddress
+                } else {
+                    contractAddress = this.evmChainClient.vaultContractAddress
+                }
+                let walletTokens = await global.swirlV2GrpcClient.GetWalletStatus(this.name, contractAddress)
                 for (let token of walletTokens) {
                     dic[token.asset_name] = parseFloat(token.balance)
                 }
