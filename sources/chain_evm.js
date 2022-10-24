@@ -99,8 +99,12 @@ class Chain_evm {
                 let spotDistribution = {}
                 for (let asset in this.assetBalanceDic) {
                     if (asset in this.assetPriceDic) {
-                        spotDistribution[asset] = this.assetBalanceDic[asset] * this.assetPriceDic[asset] / worth * 100
+                        spotDistribution[asset] = this.assetBalanceDic[asset] * this.assetPriceDic[asset]
                     }
+                }
+                // add worker balance
+                for (let worker of this.workerBalanceArr) {
+                    worth += worker.balance * this.assetPriceDic[worker.native_asset]
                 }
                 this.worth = worth
                 this.spotDistribution = spotDistribution

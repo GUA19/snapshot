@@ -1,5 +1,5 @@
-class Chain_cosmos {
-    // example: osmosis
+class Chain_other {
+    // example: osmosis, aptos
     constructor(source, allTokens) {
         this.name = source.name;
         this.type = source.type;
@@ -54,7 +54,7 @@ class Chain_cosmos {
             try {
                 dic[asset] = await global.rainbowMistGrpcClient.PriceQuoter(asset)
             } catch (error) {
-                console.log("🚀 ~ file: chain_evm.js ~ line 111 ~ Chain_evm ~ updateAssetPriceDic ~ error", this.name, asset, error)
+                console.log("🚀 ~ file: chain_other.js ~ line 111 ~ Chain_other ~ updateAssetPriceDic ~ error", this.name, asset, error)
             }
         }
         this.assetPriceDic = dic
@@ -88,7 +88,7 @@ class Chain_cosmos {
                 this.spotDistribution = spotDistribution
             }
         } catch (error) {
-            console.log("🚀 ~ file: chain_cosmos.js ~ line 98 ~ Chain_cosmos ~ updateAssetBalanceDicAndAssetPositionDicAndWorth ~ error", this.name, error)
+            console.log("🚀 ~ file: chain_other.js ~ line 98 ~ Chain_other ~ updateAssetBalanceDicAndAssetPositionDicAndWorth ~ error", this.name, error)
         }
     }
 
@@ -97,4 +97,4 @@ class Chain_cosmos {
     }
 }
 
-module.exports = Chain_cosmos
+module.exports = Chain_other

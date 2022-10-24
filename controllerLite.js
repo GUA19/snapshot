@@ -1,5 +1,5 @@
 const chain_evm = require('./sources/chain_evm');
-const chain_cosmos = require('./sources/chain_cosmos');
+const chain_other = require('./sources/chain_other');
 const obex_futures = require('./sources/obex_futures');
 const obex_spot = require('./sources/obex_spot');
 
@@ -19,8 +19,9 @@ class Controller {
                             this.sourceDic[source.name] = chainEvm
                             break;
                         case "chain-cosmos":
-                            let chainCosmos = new chain_cosmos(source, allTokens)
-                            this.sourceDic[source.name] = chainCosmos
+                        case "chain-aptos":
+                            let chainOthers = new chain_other(source, allTokens)
+                            this.sourceDic[source.name] = chainOthers
                             break;
                         case "obex-spot":
                             let obexSpot = new obex_spot(source)
@@ -75,8 +76,9 @@ class Controller {
                             this.sourceDic[source.name] = chainEvm
                             break;
                         case "chain-cosmos":
-                            let chainCosmos = new chain_cosmos(source, allTokens)
-                            this.sourceDic[source.name] = chainCosmos
+                        case "chain-aptos":
+                            let chainOthers = new chain_other(source, allTokens)
+                            this.sourceDic[source.name] = chainOthers
                             break;
                         case "obex-spot":
                             let obexSpot = new obex_spot(source)
@@ -148,7 +150,7 @@ class Controller {
     getSpotDistribution() {
         let dic = {}
         for (let source in this.sourceDic) {
-            if (this.sourceDic[source].type == "chain-evm" || this.sourceDic[source].type == "chain-cosmos") {
+            if (this.sourceDic[source].type == "chain-evm" || this.sourceDic[source].type == "chain-cosmos" || this.sourceDic[source].type == "chain-aptos") {
                 dic[source] = this.sourceDic[source].spotDistribution
             }
         }
@@ -203,6 +205,152 @@ class Controller {
         }
         dic.worth = worth
         return dic
+    }
+
+    exportLogy() {
+        let array = []
+        let priceDic = this.getPriceDic()
+        let totalWorth = 0
+        let totalLikelyMalformed = false
+        for (let source in this.sourceDic) {
+            totalWorth += this.sourceDic[source].worth
+            if (this.sourceDic[source].type == "chain-evm" || this.sourceDic[source].type == "chain-cosmos" || this.sourceDic[source].type == "chain-aptos") {
+                let count = 0
+                let likelyMalformed = false
+                let assetBalanceDic = this.sourceDic[source].getAssetBalanceDic()
+                for (let asset in assetBalanceDic) {
+                    if (assetBalanceDic[asset] == 0) {
+                        count++
+                    }
+                }
+                if (count == Object.keys(assetBalanceDic).length) {
+                    likelyMalformed = true
+                    totalLikelyMalformed = true
+                }
+                array.push(this.exportBalanceLog(source, likelyMalformed, assetBalanceDic))
+                array.push(this.exportHoldingLog(source, likelyMalformed, this.sourceDic[source].spotDistribution))
+                if (this.sourceDic[source].type == "chain-evm") {
+                    array.push(this.exportWorkerBanlanceLog(source, likelyMalformed, this.sourceDic[source].workerBalanceArr))
+                }
+                array.push(this.exportWorthLog(source, likelyMalformed, this.sourceDic[source].worth))
+            }
+        }
+        array.push(this.exportTotalWorthLog(totalLikelyMalformed, totalWorth))
+        array.push(this.exportPriceLog(priceDic))
+        return array
+    }
+
+    exportTotalWorthLog(likelyMalformed, worth) {
+        let dic = {
+            level: "info",
+            ts: Date.parse(new Date()) * 1000000,
+            msg: "new total worth snapshot",
+            likelyMalformed: likelyMalformed,
+            worth: worth,
+        }
+        let bytes = []
+        let str = JSON.stringify(dic)
+        for (let i = 0; i < str.length; ++i) {
+            let code = str.charCodeAt(i);
+            bytes = bytes.concat([code]);
+        }
+        return bytes
+    }
+
+    exportWorthLog(chainName, likelyMalformed, worth) {
+        let dic = {
+            level: "info",
+            ts: Date.parse(new Date()) * 1000000,
+            msg: "new vault total worth snapshot",
+            chainName: chainName,
+            likelyMalformed: likelyMalformed,
+            worth: worth,
+        }
+        let bytes = []
+        let str = JSON.stringify(dic)
+        for (let i = 0; i < str.length; ++i) {
+            let code = str.charCodeAt(i);
+            bytes = bytes.concat([code]);
+        }
+        return bytes
+    }
+
+    exportBalanceLog(chainName, likelyMalformed, assetBalanceDic) {
+        let dic = {
+            level: "info",
+            ts: Date.parse(new Date()) * 1000000,
+            msg: "new vault token balance snapshot",
+            chainName: chainName,
+            likelyMalformed: likelyMalformed,
+        }
+        for (let asset in assetBalanceDic) {
+            dic[asset] = assetBalanceDic[asset]
+        }
+        let bytes = []
+        let str = JSON.stringify(dic)
+        for (let i = 0; i < str.length; ++i) {
+            let code = str.charCodeAt(i);
+            bytes = bytes.concat([code]);
+        }
+        return bytes
+    }
+
+    exportHoldingLog(chainName, likelyMalformed, assetHoldingDic) {
+        let dic = {
+            level: "info",
+            ts: Date.parse(new Date()) * 1000000,
+            msg: "new vault token holding snapshot",
+            chainName: chainName,
+            likelyMalformed: likelyMalformed,
+        }
+        for (let asset in assetHoldingDic) {
+            dic[asset] = assetHoldingDic[asset]
+        }
+        let bytes = []
+        let str = JSON.stringify(dic)
+        for (let i = 0; i < str.length; ++i) {
+            let code = str.charCodeAt(i);
+            bytes = bytes.concat([code]);
+        }
+        return bytes
+    }
+
+    exportWorkerBanlanceLog(chainName, likelyMalformed, workerBalanceArr) {
+        let dic = {
+            level: "info",
+            ts: Date.parse(new Date()) * 1000000,
+            msg: "new worker balance snapshot",
+            chainName: chainName,
+            likelyMalformed: likelyMalformed,
+        }
+        for (let worker of workerBalanceArr) {
+            dic[worker.address] = worker.balance
+        }
+        let bytes = []
+        let str = JSON.stringify(dic)
+        for (let i = 0; i < str.length; ++i) {
+            let code = str.charCodeAt(i);
+            bytes = bytes.concat([code]);
+        }
+        return bytes
+    }
+
+    exportPriceLog(priceDic) {
+        let dic = {
+            level: "info",
+            ts: Date.parse(new Date()) * 1000000,
+            msg: "oracle price snapshot",
+        }
+        for (let asset in priceDic) {
+            dic[asset] = priceDic[asset]
+        }
+        let bytes = []
+        let str = JSON.stringify(dic)
+        for (let i = 0; i < str.length; ++i) {
+            let code = str.charCodeAt(i);
+            bytes = bytes.concat([code]);
+        }
+        return bytes
     }
 }
 
