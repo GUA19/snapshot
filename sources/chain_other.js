@@ -81,7 +81,7 @@ class Chain_other {
                 let spotDistribution = {}
                 for (let asset in this.assetBalanceDic) {
                     if (asset in this.assetPriceDic) {
-                        spotDistribution[asset] = this.assetBalanceDic[asset] * this.assetPriceDic[asset] / worth * 100
+                        spotDistribution[asset] = this.assetBalanceDic[asset] * this.assetPriceDic[asset]
                     }
                 }
                 this.worth = worth
